@@ -1,93 +1,54 @@
-'''
--This would be run on the pi venv
--It would set up the connection betwen the pi and the thermal camera module
--Test to ensure there is proper communcation between pi and camera module
--Create a socket for listening and binding computer with the pi
--Establish connection
--Create packets to send camera module raw data array
-'''
-
-'''
--Uses socket python library
--Uses adafruit mlx library
-
--try to create a socket using socket.socket()
--set up port for communication
--bind the socket and port using socket.bind()
--listen for any connections using socket.listen()
-
-while True loop to send and accept data
-    -use socket.accept() which creates receives a fd and address
-    -convert data buffer to network order
-    -use fd.send() to send data, example uses send('MESSAGE'.encode()) tosend byte type
-    -use fd.close() to close sockcet
-    -break out of while loop
-
-
-
-'''
 import socket
-import time
-import os
 import board
 import busio
 import adafruit_mlx90640
+import json
 
-# hostname = socket.gethostname()
-# ip = socket.gethostbyname(hostname)
-# print(hostname)
-# print(ip)
+#Set up the I2C connection with the thermal module
+i2c = busio.I2C(board.SCL, board.SDA)
 
-'''
--create i2c connection using busio.I2C()
--create var to hold camera connection using adafruit_mlx90640.MLX90640(i2c)
--update refresh rate of camera var to 1Hz
--create a frame list that has 768 values of the camera
-
--try to create a socket using socket.socket()
--set up port for communication
--bind the socket and port using socket.bind()
--listen for any connections using socket.listen()
-
--while True loop
-    -try 
-        -to get frame from ccamera var
-        -add a delay?
-
-        -accept incoming connections
-        -convert frame to json buffer 
-        -use fd.send() to send data, example uses send('MESSAGE'.encode()) tosend byte type
-        
-        -use fd.close() to close sockcet
-
-    if errorVal
-        -pass
-    if errorOS
-        -error getting data from vamera var
-        -delay?
-
+while not i2c.try_lock(): # Attempts to stop other communication to allow list of all connected devices
+    pass
+try:
+    print('--------Connected Addresses---------')
+    print(x for x in i2c.scan())
+finally:
+    i2c.unlock()
     
-'''
+mlx = adafruit_mlx90640.MLX90640(i2c)
+mlx.refreshrate = adafruit_mlx90640.RefreshRate.REFRESH_1_HZ
 
-'''
-### MAYBE USE THIS FOR sending data in pieces instead of whole ###
-int sendall(int s, char *buf, int *len)
-{
-	int total = 0;
-	int bytesleft = *len;
-	int n;
-	
-	while(total < *len)
-	{
-		n = send(s, buf + total, bytesleft, 0);
-		if (n == -1) 
-		{ 
-			break; 
-		}
-		total += n;
-		bytesleft-= n;
-	}
-	*len = total;
-	return n==-1?-1:0;
-}
-'''
+frame = [0] * 768 # Camera has 32*24 frames
+
+
+# Configure socket to bind and listen for any clients to receive data
+sock = socket.socket()
+port = 5555
+
+sock.bind(('',port))
+print('host binded port', port)
+sock.listen(5)
+print('host listening')
+s, addr = sock.accept() # Establish connection with the client
+print('Client', addr, 'accepted')
+
+#The following try finally block is an implentation to safely close the socket
+try:
+    while True:
+        try:
+            mlx.getFrame(frame) # Attempts to get frame from thermal module, sometimes may return invalid results
+            # print(frame)
+            jframe = json.dumps(frame) + "\n" #converts frame data to json formatted string, delim of EOF
+            print(jframe)
+            s.sendall(jframe.encode())
+            print("frame sent")
+        except (BrokenPipeError, ConnectionResetError):
+            print("Client disconnected")
+            break
+        except ValueError:
+            print('Invalid frame...Continuing')
+            continue
+except KeyboardInterrupt:
+    print("Server stopped with Ctrl+C")
+finally:
+    s.close() # End connection with client
