@@ -44,15 +44,15 @@ def recvall(s, buffer):
 def process_thermal_frame(frame):
 	global previous_frame
 	# Reshape frame array to 32x24
-	print(type(frame))
-	print(len(frame)) 
+	#print(type(frame))
+	#print(len(frame)) 
 	frame2D = numpy.array(frame, dtype=numpy.float32).reshape((HEIGHT, WIDTH))
 
 	# temportal smoothing to reduce slow frame switching
 	if previous_frame is None:
 		smoothed = frame2D
 	else:
-		alpha = 0.35 # higher = more responsive, lower = smoother
+		alpha = 0.65 # higher = more responsive, lower = smoother
 		smoothed = (alpha * frame2D) + ((1 - alpha) * previous_frame) # Some part of new frame meshed with some from part of previous
 	previous_frame = smoothed
 
@@ -69,7 +69,7 @@ def process_thermal_frame(frame):
 	)
 
 	# Convert the grayscale intensity to BGR color using openCV
-	colored = cv2.applyColorMap(enlarged, cv2.COLORMAP_PLASMA)
+	colored = cv2.applyColorMap(enlarged, cv2.COLORMAP_RAINBOW)
 	
 	return colored
 

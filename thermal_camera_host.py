@@ -39,9 +39,9 @@ try:
             mlx.getFrame(frame) # Attempts to get frame from thermal module, sometimes may return invalid results
             # print(frame)
             jframe = json.dumps(frame) + "\n" #converts frame data to json formatted string, delim of EOF
-            print(jframe)
+            #print(jframe)
             s.sendall(jframe.encode())
-            print("frame sent")
+            #print("frame sent")
         except (BrokenPipeError, ConnectionResetError):
             print("Client disconnected")
             break
