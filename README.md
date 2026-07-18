@@ -21,4 +21,6 @@ The Raspberry PI hosts a connection to where it sends the camera data to a clien
 
 
 ### Things That I Learned
+- For the mlx90640 module, the member functions were quite simple to use. The pattern that I learned was that the IC2 connection needs to be established, an optional check to see if address exists (which pauses any communication to do this), and then a function called getFrame(), which returns as a collection.
+-
 
