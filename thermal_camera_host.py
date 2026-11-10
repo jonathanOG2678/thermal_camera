@@ -16,7 +16,7 @@ finally:
     i2c.unlock()
     
 mlx = adafruit_mlx90640.MLX90640(i2c)
-mlx.refreshrate = adafruit_mlx90640.RefreshRate.REFRESH_1_HZ
+mlx.refreshrate = adafruit_mlx90640.RefreshRate.REFRESH_4_HZ
 
 frame = [0] * 768 # Camera has 32*24 frames
 
@@ -37,11 +37,8 @@ try:
     while True:
         try:
             mlx.getFrame(frame) # Attempts to get frame from thermal module, sometimes may return invalid results
-            # print(frame)
             jframe = json.dumps(frame) + "\n" #converts frame data to json formatted string, delim of EOF
-            #print(jframe)
             s.sendall(jframe.encode())
-            #print("frame sent")
         except (BrokenPipeError, ConnectionResetError):
             print("Client disconnected")
             break

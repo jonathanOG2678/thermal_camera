@@ -3,7 +3,7 @@ import json
 import socket
 import cv2
 port = 5555
-host = '10.0.0.87'
+host = '' #Add IPv4 address
 
 WIDTH = 32
 HEIGHT = 24
@@ -23,7 +23,7 @@ MAX_TEMP = 40.0
 previous_frame = None 	# Save previous frame for blending with current
 
 # This function was adapted from ChatGPT with my custom recvall() function 
-# from C++. This modification allows to separate frames if inbound data contains
+# from C. This modification allows to separate frames if inbound data contains
 # more than one frame because of TCP byte stream (partial one frame, exact one 
 # frame, 1+ frames). Any leftover bytes will be temporarily held for the next frame,
 # as this is the next frame
@@ -44,8 +44,6 @@ def recvall(s, buffer):
 def process_thermal_frame(frame):
 	global previous_frame
 	# Reshape frame array to 32x24
-	#print(type(frame))
-	#print(len(frame)) 
 	frame2D = numpy.array(frame, dtype=numpy.float32).reshape((HEIGHT, WIDTH))
 
 	# temportal smoothing to reduce slow frame switching
@@ -69,7 +67,7 @@ def process_thermal_frame(frame):
 	)
 
 	# Convert the grayscale intensity to BGR color using openCV
-	colored = cv2.applyColorMap(enlarged, cv2.COLORMAP_RAINBOW)
+	colored = cv2.applyColorMap(enlarged, cv2.COLORMAP_INFERNO)
 	
 	return colored
 
@@ -83,7 +81,7 @@ print('Connected to', host)
 buffer = b""
 while True:
 	data, buffer = recvall(s, buffer)
-	print(data)
+	# print(data)
 	frame = json.loads(data.decode())
 
 	#process image and display

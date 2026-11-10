@@ -14,7 +14,7 @@ The Raspberry PI hosts a connection to where it sends the camera data to a clien
 - Raspberry PI 4B
 - Windows Computer
 - OpenCV
-- Python
+- Python 3.11
 
 
 ### Notes
